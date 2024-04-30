@@ -1,0 +1,73 @@
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from twilio.twiml.messaging_response import MessagingResponse
+import os
+
+@csrf_exempt
+def whatsapp_webhook(request):
+    # Extract the user's message
+    user_message = request.POST.get('Body')
+
+    # Check if the user's message contains the "sunny" keyword
+    if 'sunny' in user_message.lower():
+        # Prepare the sunny image file path
+        sunny_image_path = os.path.join('static', 'images', 'sunny.jpg')
+
+        # Construct the WhatsApp response with the sunny image
+        response = MessagingResponse()
+        response.media(sunny_image_path)
+
+        return HttpResponse(str(response))
+    else:
+        # Handle other user messages or send a default response
+        return HttpResponse('Thank you for your message!')
+/////////////////////////////////////////////
+weather_data = {
+    "wind_speed": 5.66,
+    "wind_degrees": 210,
+    "temp": 7,
+    "humidity": 87,
+    "sunset": 1615658463,
+    "min_temp": 7,
+    "cloud_pct": 75,
+    "feels_like": 2,
+    "sunrise": 1615616341,
+    "max_temp": 8
+}
+
+def is_raining(weather_data):
+    """
+    Determines if it's raining based on the provided weather data.
+    
+    Args:
+        weather_data (dict): A dictionary containing weather data.
+    
+    Returns:
+        bool: True if it's raining, False otherwise.
+    """
+    # Check cloud percentage
+    cloud_pct = weather_data["cloud_pct"]
+    if cloud_pct >= 70:
+        # High cloud cover suggests the possibility of rain
+        rain_likelihood = True
+    else:
+        rain_likelihood = False
+    
+    # Check humidity
+    humidity = weather_data["humidity"]
+    if humidity >= 80:
+        # High humidity suggests the possibility of rain
+        rain_likelihood = True
+    
+    # Check temperature
+    temp = weather_data["temp"]
+    feels_like = weather_data["feels_like"]
+    if temp <= 10 and feels_like <= 5:
+        # Low temperatures suggest the possibility of rain
+        rain_likelihood = True
+    
+    return rain_likelihood
+
+# Call the function to check if it's raining
+is_raining_now = is_raining(weather_data)
+print(f"Is it raining? {is_raining_now}")
